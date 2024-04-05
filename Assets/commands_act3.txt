@@ -1,0 +1,138 @@
+git clone https://github.com/megmontero/virtualizacion-a3.git
+ni Dockerfile
+notepad . /Dockerfile
+cat Dockerfile
+--
+FROM python:3.9
+WORKDIR /app
+COPY ./virtualizacion-a3/ /app
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0"]
+
+--
+docker build . -t jrvm/m2-actividad3.1:1.0
+
+docker images
+
+ ------------ por si acaso -----
+ docker rmi -f jrvm/m2-actividad3.1:1.0
+docker stop actividad3
+docker rm actividad3
+-- comando unico para detener y eliminar docker rm -f actividad3
+
+-----
+
+docker run -d --name actividad3 -p 8000:8000 jrvm/m2-actividad3.1:1.0
+
+
+docker ps
+docker logs actividad3
+
+curl "http://localhost:8000/dice?amount=2&sides=6"
+
+
+en el navegador: realizar get en localhost 8000
+http://localhost:8000/dice?amount=2&sides=6
+
+Para ver Swagger:
+http://localhost:8000/docs
+
+
+docker push jrvm/m2-actividad3.1:1.0
+
+--------------------------------------------------
+
+------KUBERNETES------
+
+kubectl create namespace virtualizacion
+kubectl get po -n virtualizacion
+kubectl config current-context 
+kubectl config set-context docker-desktop --namespace=virtualizacion
+kubectl get namespaces
+
+
+## NO FUNCIONA --CURRENT ##
+ kubectl config set-content --current --namespace virtualizacion
+## 
+
+kubectl get pod
+kubectl get pods --all-namespaces
+kubectl cluster-info
+kubectl get nodes
+
+mkdir kubernetes
+cd kubernetes
+
+##
+La versión apps/v1 es la versión estable y recomendada para usar con Deployments, StatefulSets, ReplicaSets, y otros recursos relacionados con la gestión de aplicaciones dentro de Kubernetes.
+##
+
+@"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roll-dice-api-deployment
+  namespace: virtualizacion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: roll-dice-api
+  template:
+    metadata:
+      labels:
+        app: roll-dice-api
+    spec:
+      containers:
+      - name: roll-dice-api
+        image: jrvm/m2-actividad3.1:1.0
+        ports:
+        - containerPort: 8000
+"@ | Out-File -FilePath deployment.yaml
+
+ls
+
+@"
+apiVersion: v1
+kind: Service
+metadata:
+  name: roll-dice-api-deployment
+  namespace: virtualizacion
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app: roll-dice-api
+"@ | Out-File -FilePath service.yaml
+
+ls
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+##------- NO UTILIZADO 
+kubectl create -f .\deploy.yml
+## -------
+
+kubectl get deployment
+kubectl get pod
+
+##------- NO UTILIZADO
+kubectl exec -it NAME -- accede al pod para desde shell dentro llamar al servicio 
+  # curl localhost:8000/hello?name=Rafa
+
+kubectl expose deployment example2-api --type=NodePort -port=8000
+##------ 
+
+kubectl get svc -n virtualizacion
+kubectl describe svc roll-dice-api-deployment -n virtualizacion
+
+---ahora desde el navegador:
+  curl "http://localhost:31769/dice?amount=2&sides=6"
+
+
+

@@ -58,12 +58,12 @@ curl "http://localhost:NodePort/dice?amount=2&sides=6"
 http://localhost:NodePort/docs
 ```
 
-Troubleshooting
+## Troubleshooting
 If you encounter any issues with deploying the application, you can refer to the commands in the /assets directory for guidance or rollback steps.
 
-Contribution
+## Contribution
 Contributions to the repository are welcome. Please ensure that you test the changes in your local environment before making a pull request.
 
-### Acknowledgments
+## Acknowledgments
 I'd like to express my sincere gratitude to our teacher @MANUEL ENRIQUE GOMEZ MONTERO whose ability to convey complex information with clarity made our learning about Virtualization boost!
 

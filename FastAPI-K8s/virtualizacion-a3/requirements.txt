@@ -1,0 +1,4 @@
+dice
+fastapi
+pydantic
+uvicorn
